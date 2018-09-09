@@ -1,0 +1,205 @@
+---
+title: "FPP2 CH3 EX"
+output: html_notebook
+---
+
+```{r}
+library(fpp2)
+```
+
+```{r}
+par(mfrow=c(2,1))
+
+(lambda <- BoxCox.lambda(usnetelec))
+autoplot(BoxCox(usnetelec,lambda))
+
+autoplot(usnetelec)
+```
+
+```{r}
+par(mfrow=c(2,1))
+
+(lambda <- BoxCox.lambda(usgdp))
+autoplot(BoxCox(usgdp,lambda))
+
+autoplot(usgdp)
+```
+
+```{r}
+par(mfrow=c(2,1))
+
+(lambda <- BoxCox.lambda(usnetelec))
+autoplot(BoxCox(usnetelec,lambda))
+
+autoplot(usnetelec)
+```
+
+ 2.
+```{r}
+par(mfrow=c(2,1))
+
+(lambda <- BoxCox.lambda(cangas))
+autoplot(BoxCox(cangas,lambda))
+
+autoplot(cangas)
+```
+Boxcox transforms  don't seem to be effective in this example because the instability of the trend. BC transforms work best when the level of the variability increase or decrease is the same throughout the entire time series.
+
+3.
+```{r}
+library(tidyverse)
+library(readxl)
+retail <- read_excel('C:/Users/lochr/Desktop/FPP2/retail.xlsx',sheet=1,skip=1)
+
+```
+```{r}
+myts <- ts(retail[,"A3349873A"],
+  frequency=12, start=c(1982,4))
+autoplot(myts)
+```
+ 
+Looks like a calendar adjustment would make things smoother and easier to forecast. There is seasonality approaching the end of each year porbabily holiday season.
+
+4.
+```{r}
+autoplot(dole)
+```
+```{r}
+autoplot(usdeaths)
+```
+```{r}
+par(mfrow=c(2,1))
+
+(lambda <- BoxCox.lambda(usdeaths))
+autoplot(BoxCox(usdeaths,lambda))
+
+autoplot(usdeaths)
+```
+Make a calendar adjustment to accouont for diff days in months for usdeaths.
+```{r}
+dframe <- cbind(Monthly = usdeaths,
+                DailyAverage = usdeaths/monthdays(usdeaths))
+  autoplot(dframe, facet=TRUE) +
+    xlab("Years") + ylab("DEATHS") +
+    ggtitle("US DEATHS")
+```
+
+cbind function 
+```{r}
+dframe
+```
+
+
+```{r}
+autoplot(bricksq)
+```
+```{r}
+par(mfrow=c(2,1))
+
+(lambda <- BoxCox.lambda(bricksq))
+autoplot(BoxCox(bricksq,lambda))
+
+autoplot(bricksq)
+```
+ 
+No effect lol
+
+5.
+
+```{r}
+beer <- window(ausbeer, start=1992)
+fc <- snaive(beer)
+autoplot(fc)
+res <- residuals(fc)
+autoplot(res)
+```
+```{r}
+checkresiduals(res)
+```
+Residuals don't look correlated which is good.
+Look somewhat normally distributed ...
+ACF is close to zero, seems like it is white noise?
+
+6.
+```{r}
+brickzz <- window(bricksq, start=1956)
+fc <- snaive(brickzz)
+autoplot(fc)
+res <- residuals(fc)
+autoplot(res)
+checkresiduals(res)
+```
+
+Residuals in this case don't look correlated
+They are normally distributed
+ACF shows a sinusoidal shape
+
+7.
+a. true, norm dist residuals means theres nothing else to extract from the ts to improve the fc
+b. false, low residuals could mean overfitting
+c. false, there are other methods liek scaled errors. MAPE punishes over forecasting a lot which can skew towards under forecasting
+d. false, K.I.S.S and also need to check how forecastable the item or topic is in the first place
+e. false, fc accuracy on the test set usually doesn't translate as well as people hope
+
+8.
+```{r}
+myts.train <- window(myts, end=c(2010,12))
+myts.test <- window(myts, start=2011)
+```
+
+```{r}
+autoplot(myts) +
+  autolayer(myts.train, series="Training") +
+  autolayer(myts.test, series="Test")
+```
+```{r}
+fc<-snaive(myts.train)
+```
+```{r}
+accuracy(fc,myts.test)
+```
+
+```{r}
+checkresiduals(fc)
+```
+
+Not quite sure how to interpret the sensitivity, MAE difference between test and train is increased by 30 and MAPE increased from 8 to 16%, Still doesn't seem bad all things considered.
+
+9.
+a.
+```{r}
+train1 <-window(visnights[,"QLDMetro"],end = c(2013,4))
+train2 <-window(visnights[,"QLDMetro"],end = c(2014,4))
+train3 <-window(visnights[,"QLDMetro"],end = c(2015,4))
+```
+```{r}
+fc1<-snaive(train1)
+fc2<-snaive(train2)
+fc3<-snaive(train3)
+autoplot(fc)
+autoplot(fc2)
+autoplot(fc3)
+```
+
+```{r}
+accuracy(fc)
+```
+
+10.
+```{r}
+autoplot(dowjones)
+```
+```{r}
+dj<-window(dowjones,start=0, end=60)
+
+autoplot(dj) +
+  autolayer(rwf(dj, h=20, drift = TRUE))
+```
+
+
+
+
+
+
+
+
